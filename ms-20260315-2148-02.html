@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Niche Genealogy Researcher</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .input-section, .results-section, .chart-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #fdfdfd;
+        }
+        .input-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #4a4a4a;
+        }
+        .input-section input[type="file"], .input-section textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        .input-section textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        .input-section button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        .input-section button:hover {
+            background-color: #2980b9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+        .chart-container {
+            text-align: center;
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .ad-slot {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px dashed #ccc;
+            color: #777;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.8em;
+            color: #777;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.4em;
+            }
+            .input-section input[type="file"],
+            .input-section textarea,
+            .input-section button {
+                font-size: 0.95rem;
+                padding: 8px 15px;
+            }
+            table th, table td {
+                padding: 8px 10px;
+                font-size: 0.9em;
+            }
+        }
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            h2 {
+                font-size: 1.2em;
+            }
+            .input-section button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Niche Genealogy Researcher</h1>
+        <p style="text-align: center; color: #555;">Upload or paste your CSV data to analyze and uncover hidden connections in your niche genealogy research.</p>
+
+        <div class="input-section">
+            <h2>Data Input</h2>
+            <label for="csvFile">Upload CSV File:</label>
+            <input type="file" id="csvFile" accept=".csv">
+
+            <label for="csvPaste">Or Paste CSV Data:</label>
+            <textarea id="csvPaste" placeholder="Paste your CSV data here (e.g., Name,Birth Year,Origin,Event Date,Record Type)"></textarea>
+
+            <button onclick="processData()">Analyze Data</button>
+        </div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <h2>Analysis Summary</h2>
+            <div id="summaryTableContainer">
+                </div>
+            </div>
+
+        <div class="chart-section" id="chartSection" style="display: none;">
+            <h2>Visual Insights</h2>
+            <!-- AD_SLOT -->
+            <div class="ad-slot">
+                AI-Assisted Genealogy Advertising Slot
+            </div>
+            <div class="chart-container">
+                <svg id="dataChart" width="100%" height="300"></svg>
+            </div>
+            <button onclick="downloadCSV()" style="margin-top: 20px; background-color: #2ecc71;">Download Results as CSV</button>
+        </div>
+    </div>
+
+    <footer>
+        <!-- EU AI Act Disclosure -->
+        <!-- This tool leverages AI algorithms for data analysis. It is designed to assist users in their genealogical research by automating data processing and highlighting potential connections. The AI's outputs are suggestions and should be verified by the user through independent genealogical research. The system complies with the principles outlined in the EU AI Act regarding transparency and human oversight. -->
+    </footer>
+
+    <script>
+        function parseCSV(text) {
+            const rows = text.trim().split('\n');
+            const headers = rows[0].split(',').map(h => h.trim());
+            const data = [];
+            for (let i = 1; i < rows.length; i++) {
+                const values = rows[i].split(',').map(v => v.trim());
+                const rowObj = {};
+                for (let j = 0; j < headers.length; j++) {
+                    rowObj[headers[j]] = values[j] || '';
+                }
+                data.push(rowObj);
+            }
+            return { headers, data };
+        }
+
+        function calculateStats(data, column) {
+            const numericValues = data
+                .map(row => parseFloat(row[column]))
+                .filter(value => !isNaN(value));
+
+            if (numericValues.length === 0) {
+                return { count: 0, min: 'N/A', max: 'N/A', mean: 'N/A', median: 'N/A' };
+            }
+
+            const count = numericValues.length;
+            const min = Math.min(...numericValues);
+            const max = Math.max(...numericValues);
+            const sum = numericValues.reduce((a, b) => a + b, 0);
+            const mean = sum / count;
+
+            numericValues.sort((a, b) => a - b);
+            const mid = Math.floor(count / 2);
+            const median = count % 2 === 0 ? (numericValues[mid - 1] + numericValues[mid]) / 2 : numericValues[mid];
+
+            return {
+                count: count,
+                min: min.toFixed(2),
+                max: max.toFixed(2),
+                mean: mean.toFixed(2),
+                median: median.toFixed(2)
+            };
+        }
+
+        function renderTable(stats) {
+            let tableHtml = '<table><thead><tr><th>Statistic</th>';
+            for (const col in stats[0]) {
+                tableHtml += `<th>${col}</th>`;
+            }
+            tableHtml += '</tr></thead><tbody>';
+
+            const keys = Object.keys(stats[0]);
+            for (const key of keys) {
+                tableHtml += `<tr><td>${key}</td>`;
+                stats.forEach(s => {
+                    tableHtml += `<td>${s[key]}</td>`;
+                });
+                tableHtml += '</tr>';
+            }
+            tableHtml += '</tbody></table>';
+            document.getElementById('summaryTableContainer').innerHTML = tableHtml;
+        }
+
+        function renderChart(data, headers) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.getElementById('dataChart');
+            svg.innerHTML = ''; // Clear previous chart
+
+            const chartWidth = svg.clientWidth;
+            const chartHeight = svg.clientHeight;
+            const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+            const plotWidth = chartWidth - margin.left - margin.right;
+            const plotHeight = chartHeight - margin.top - margin.bottom;
+
+            if (plotWidth <= 0 || plotHeight <= 0) return;
+
+            // Attempt to find a suitable numeric column for the chart's Y-axis
+            let numericColumn = null;
+            let categoricalColumn = null;
+
+            for (const header of headers) {
+                const isNumeric = data.every(row => {
+                    const val = parseFloat(row[header]);
+                    return isNaN(val) ? row[header] === '' : true;
+                });
+                if (isNumeric && header.toLowerCase().includes('year') || header.toLowerCase().includes('date')) {
+                    numericColumn = header;
+                } else if (!isNumeric && header.toLowerCase().includes('origin') || header.toLowerCase().includes('name') || header.toLowerCase().includes('event')) {
+                    categoricalColumn = header;
+                }
+            }
+
+            // Fallback if specific columns aren't found
+            if (!numericColumn) {
+                for (const header of headers) {
+                    if (data.some(row => !isNaN(parseFloat(row[header])))) {
+                        numericColumn = header;
+                        break;
+                    }
+                }
+            }
+            if (!categoricalColumn) {
+                 for (const header of headers) {
+                    if (!data.some(row => !isNaN(parseFloat(row[header])))) {
+                        categoricalColumn = header;
+                        break;
+                    }
+                }
+            }
+
+
+            if (!numericColumn || !categoricalColumn) {
+                console.warn("Could not find suitable columns for charting.");
+                svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">Insufficient data for charting.</text>';
+                return;
+            }
+
+            const numericValues = data.map(row => parseFloat(row[numericColumn])).filter(v => !isNaN(v));
+            const categories = [...new Set(data.map(row => row[categoricalColumn]).filter(c => c !== ''))];
+
+            if (numericValues.length === 0 || categories.length === 0) {
+                 svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">Insufficient data for charting.</text>';
+                 return;
+            }
+
+            const yMin = Math.min(...numericValues);
+            const yMax = Math.max(...numericValues);
+
+            const xScale = d3.scaleBand()
+                .domain(categories)
+                .range([0, plotWidth])
+                .padding(0.1);
+
+            const yScale = d3.scaleLinear()
+                .domain([yMin > 0 ? 0 : yMin, yMax]) // Ensure domain starts from 0 if all values are positive
+                .range([plotHeight, 0]);
+
+            // Create groups for chart elements
+            const chartGroup = document.createElementNS(svgNS, "g");
+            chartGroup.setAttribute("transform", `translate(${margin.left}, ${margin.top})`);
+            svg.appendChild(chartGroup);
+
+            // X-axis
+            const xAxisGroup = document.createElementNS(svgNS, "g");
+            xAxisGroup.setAttribute("transform", `translate(0, ${plotHeight})`);
+            chartGroup.appendChild(xAxisGroup);
+
+            const xAxisLine = document.createElementNS(svgNS, "line");
+            xAxisLine.setAttribute("x2", plotWidth);
+            xAxisLine.setAttribute("stroke", "#333");
+            xAxisGroup.appendChild(xAxisLine);
+
+            categories.forEach(cat => {
+                const xPos = xScale(cat) + xScale.bandwidth() / 2;
+                const tick = document.createElementNS(svgNS, "line");
+                tick.setAttribute("x1", xPos);
+                tick.setAttribute("x2", xPos);
+                tick.setAttribute("y1", 0);
+                tick.setAttribute("y2", 6);
+                tick.setAttribute("stroke", "#333");
+                xAxisGroup.appendChild(tick);
+
+                const text = document.createElementNS(svgNS, "text");
+                text.setAttribute("x", xPos);
+                text.setAttribute("y", plotHeight + margin.bottom - 10);
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("fill", "#333");
+                text.textContent = cat;
+                xAxisGroup.appendChild(text);
+            });
+
+            // Y-axis
+            const yAxisGroup = document.createElementNS(svgNS, "g");
+            chartGroup.appendChild(yAxisGroup);
+
+            const yAxisLine = document.createElementNS(svgNS, "line");
+            yAxisLine.setAttribute("y2", plotHeight);
+            yAxisLine.setAttribute("stroke", "#333");
+            yAxisGroup.appendChild(yAxisLine);
+
+            const tickCount = 5;
+            for (let i = 0; i <= tickCount; i++) {
+                const yPos = plotHeight - (plotHeight / tickCount) * i;
+                const tickValue = yMin + (yMax - yMin) * (1 - i / tickCount);
+
+                const tick = document.createElementNS(svgNS, "line");
+                tick.setAttribute("x1", -6);
+                tick.setAttribute("x2", 0);
+                tick.setAttribute("y1", yPos);
+                tick.setAttribute("y2", yPos);
+                tick.setAttribute("stroke", "#333");
+                yAxisGroup.appendChild(tick);
+
+                const text = document.createElementNS(svgNS, "text");
+                text.setAttribute("x", -10);
+                text.setAttribute("y", yPos);
+                text.setAttribute("dy", "0.35em");
+                text.setAttribute("text-anchor", "end");
+                text.setAttribute("fill", "#333");
+                text.textContent = tickValue.toFixed(0);
+                yAxisGroup.appendChild(text);
+            }
+
+            // Bars
+            data.forEach(row => {
+                const cat = row[categoricalColumn];
+                const value = parseFloat(row[numericColumn]);
+                if (categories.includes(cat) && !isNaN(value)) {
+                    const barWidth = xScale.bandwidth();
+                    const barHeight = plotHeight - yScale(value);
+                    const xPos = xScale(cat);
+                    const yPos = plotHeight - barHeight;
+
+                    const rect = document.createElementNS(svgNS, "rect");
+                    rect.setAttribute("x", xPos);
+                    rect.setAttribute("y", yPos);
+                    rect.setAttribute("width", barWidth);
+                    rect.setAttribute("height", barHeight);
+                    rect.setAttribute("fill", "#3498db");
+                    chartGroup.appendChild(rect);
+                }
+            });
+
+             // Add axis labels
+            const xAxisLabel = document.createElementNS(svgNS, "text");
+            xAxisLabel.setAttribute("x", plotWidth / 2);
+            xAxisLabel.setAttribute("y", plotHeight + margin.bottom);
+            xAxisLabel.setAttribute("text-anchor", "middle");
+            xAxisLabel.setAttribute("font-weight", "bold");
+            xAxisLabel.textContent = categoricalColumn;
+            chartGroup.appendChild(xAxisLabel);
+
+            const yAxisLabel = document.createElementNS(svgNS, "text");
+            yAxisLabel.setAttribute("transform", "rotate(-90)");
+            yAxisLabel.setAttribute("x", -plotHeight / 2);
+            yAxisLabel.setAttribute("y", -margin.left + 15);
+            yAxisLabel.setAttribute("text-anchor", "middle");
+            yAxisLabel.setAttribute("font-weight", "bold");
+            yAxisLabel.textContent = numericColumn;
+            chartGroup.appendChild(yAxisLabel);
+        }
+
+        function downloadCSV() {
+            const summaryStats = JSON.parse(sessionStorage.getItem('analysisResults'));
+            if (!summaryStats) {
+                alert("No analysis results to download.");
+                return;
+            }
+
+            let csvContent = "Statistic,";
+            const headers = Object.keys(summaryStats[0]);
+            csvContent += headers.join(',') + '\n';
+
+            summaryStats.forEach(statRow => {
+                csvContent += `${Object.keys(statRow)[0]},`; // Add the key label (e.g., 'Count')
+                csvContent += headers.map(header => statRow[header]).join(',') + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", "genealogy_analysis_summary.csv");
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function processData() {
+            const fileInput = document.getElementById('csvFile');
+            const pasteInput = document.getElementById('csvPaste');
+            let csvData = '';
+
+            if (fileInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    csvData = e.target.result;
+                    analyzeAndDisplay(csvData);
+                };
+                reader.readAsText(fileInput.files[0]);
+            } else if (pasteInput.value.trim()) {
+                csvData = pasteInput.value;
+                analyzeAndDisplay(csvData);
+            } else {
+                alert("Please upload a CSV file or paste CSV data.");
+                return;
+            }
+        }
+
+        function analyzeAndDisplay(csvData) {
+            const { headers, data } = parseCSV(csvData);
+
+            if (headers.length === 0 || data.length === 0) {
+                alert("Invalid CSV data. Please check your input.");
+                return;
+            }
+
+            const summaryStats = [];
+            headers.forEach(header => {
+                const stats = calculateStats(data, header);
+                const statRow = { 'Column': header, 'Count': stats.count, 'Min': stats.min, 'Max': stats.max, 'Mean': stats.mean, 'Median': stats.median };
+                summaryStats.push(statRow);
+            });
+
+            renderTable(summaryStats);
+            renderChart(data, headers);
+
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('chartSection').style.display = 'block';
+            sessionStorage.setItem('analysisResults', JSON.stringify(summaryStats)); // Store for download
+        }
+
+         // Simple d3-like scales for SVG if d3 is not available
+        const d3 = {
+            scaleBand: () => {
+                let domain = [];
+                let range = [0, 1];
+                let padding = 0;
+                let bandwidthValue;
+
+                const scale = (value) => {
+                    const index = domain.indexOf(value);
+                    if (index === -1) return 0; // Or some default behavior
+                    const step = (range[1] - range[0]) / (domain.length + (domain.length - 1) * padding);
+                    bandwidthValue = step * (1 - padding);
+                    const offset = index * step;
+                    return range[0] + offset;
+                };
+
+                scale.domain = (d) => {
+                    domain = d;
+                    return scale;
+                };
+                scale.range = (r) => {
+                    range = r;
+                    return scale;
+                };
+                scale.padding = (p) => {
+                    padding = p;
+                    return scale;
+                };
+                 scale.bandwidth = () => {
+                    if (bandwidthValue === undefined) {
+                         const step = (range[1] - range[0]) / (domain.length + (domain.length - 1) * padding);
+                         bandwidthValue = step * (1 - padding);
+                    }
+                    return bandwidthValue;
+                 };
+
+                return scale;
+            },
+            scaleLinear: () => {
+                let domain = [0, 1];
+                let range = [0, 1];
+
+                const scale = (value) => {
+                    const d0 = domain[0];
+                    const d1 = domain[1];
+                    const r0 = range[0];
+                    const r1 = range[1];
+                    return r0 + ((value - d0) / (d1 - d0)) * (r1 - r0);
+                };
+
+                scale.domain = (d) => {
+                    domain = d;
+                    return scale;
+                };
+                scale.range = (r) => {
+                    range = r;
+                    return scale;
+                };
+                return scale;
+            }
+        };
+    </script>
+</body>
+</html>
